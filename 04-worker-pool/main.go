@@ -4,6 +4,10 @@ import (
 	"fmt"
 )
 
+// This example demonstrates a worker pool pattern with a generator, transformer, and saver.
+// The generator produces numbers, the transformer doubles them, and the saver processes them.
+// The saver stops processing after saving 5 items, signaling the other components to stop as well.
+
 func generator(done chan struct{}) chan int {
 	out := make(chan int)
 	go func() {

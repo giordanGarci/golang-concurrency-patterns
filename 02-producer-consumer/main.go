@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+// This example demonstrates a simple producer-consumer pattern using a buffered channel.
+// The producer generates integers and sends them to the channel.
+// The consumer receives integers from the channel and processes them with a delay.
+
 func producer(c chan<- int) {
 	for i := range 10 {
 		fmt.Println("Producing:", i)

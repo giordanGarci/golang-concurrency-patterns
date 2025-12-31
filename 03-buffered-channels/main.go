@@ -6,6 +6,9 @@ import (
 	"time"
 )
 
+// This example demonstrates a buffered channel with multiple workers processing jobs concurrently.
+// The main function sends jobs to the workers via a buffered channel, and workers process these jobs and send results back through another buffered channel.
+
 func worker(id int, jobs <-chan int, results chan<- int, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for j := range jobs {
