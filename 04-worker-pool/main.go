@@ -4,36 +4,55 @@ import (
 	"fmt"
 )
 
-func generator() chan int {
+func generator(done chan struct{}) chan int {
 	out := make(chan int)
 	go func() {
+		defer close(out)
 		for i := 1; i <= 10; i++ {
-			out <- i
-			fmt.Println("Generated:", i)
+			select {
+			case <-done:
+				fmt.Println("Generator received done signal")
+				return
+			case out <- i:
+				fmt.Println("Generated:", i)
+			}
 		}
-		close(out)
 	}()
 	return out
 }
 
-func transformer(in chan int) chan int {
+func transformer(done chan struct{}, in chan int) chan int {
 	out := make(chan int)
 	go func() {
+		defer close(out)
 		for n := range in {
-			out <- n * 2
-			fmt.Println("Transformed:", n, "to", n*2)
+			select {
+			case <-done:
+				fmt.Println("Transformer received done signal")
+				return
+			case out <- n * 2:
+				fmt.Println("Transformed:", n, "to", n*2)
+			}
 		}
-		close(out)
 	}()
 	return out
 }
 
-func saver(in chan int) {
+func saver(done chan struct{}, in chan int) {
+	var count int
 	for n := range in {
-		fmt.Println("Saved value:", n)
+		count++
+		fmt.Println("Saved:", n)
+		if count == 5 {
+			fmt.Println("Saver reached limit, sending done signal")
+			close(done)
+			return
+		}
 	}
 }
 
 func main() {
-	saver(transformer(generator()))
+	done := make(chan struct{})
+
+	saver(done, transformer(done, generator(done)))
 }
