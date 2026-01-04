@@ -1,81 +1,55 @@
 # Go Concurrency Patterns
 
-A hands-on lab for Go concurrency patterns, focused on goroutines, channels, `context`, and idiomatic concurrent design.
+This repository contains a collection of practical exercises and implementation patterns for high-performance concurrency in Go. It covers everything from basic goroutine synchronization to complex worker pool architectures with graceful shutdown capabilities.
 
-This repository provides practical examples of classic and real-world concurrency patterns in Go, helping you understand how and why they work.
+## Architecture Overview
 
-## Topics Covered
+The following diagram represents the final architecture implemented in this repository. It showcases a robust Worker Pool pattern utilizing dispatchers, job channels, fan-in results, and context-driven lifecycle management.
 
-* Race conditions
-* Producer–Consumer
-* Buffered channels
-* Worker Pool
-* Fan-In / Fan-Out
-* Concurrent pipelines
-* `select` and channel multiplexing
-* Context timeout and cancellation
+![System Architecture](./assets/architecture.png)
 
----
+### Key Architectural Components
 
-## Repository Structure
-
-Each folder contains a runnable example of a concurrency pattern:
-
-```
-01-race-conditional
-02-producer-consumer
-03-buffered-channels
-04-worker-pool
-05-fan-in-fan-out
-06-concurrent-pipeline
-07-select-multiplexing
-08-context-timeout
-```
+* **Dispatchers**: Independent goroutines responsible for generating or sourcing tasks and feeding them into the job channel using non-blocking selection.
+* **Job Channel**: A centralized queue (buffered or unbuffered) that distributes tasks among available workers.
+* **Worker Pool**: A fixed set of consumer goroutines that process tasks concurrently, respecting context cancellation to prevent goroutine leaks.
+* **Result Channel (Fan-in)**: A pattern where multiple workers send their processed data into a single channel for consolidated consumption.
+* **Main/Final Consumer**: The orchestration point that reads final results and manages the application exit strategy.
+* **Graceful Shutdown**: Coordination between `sync.WaitGroup` and `context.Context` to ensure all in-flight tasks are completed or cleaned up before the process terminates.
 
 ---
 
-## Getting Started
+## Implemented Concepts
 
-### Prerequisites
+The repository is organized by incremental complexity, covering the following core Go concurrency primitives:
 
-* Go 1.18+
-* Basic knowledge of Go
+* **Goroutines and WaitGroups**: Basic execution and synchronization.
+* **Channels**: Communication and data ownership between concurrent processes.
+* **Select Statement**: Multiplexing asynchronous events and handling non-blocking channel operations.
+* **Context (Timeout and Cancellation)**: Managing the lifecycle of goroutines and propagating signals.
+* **Worker Pools**: Efficient resource management by limiting the number of active goroutines.
+* **Fan-in / Fan-out**: Distributing work and consolidating results across multiple channels.
+* **Signal Handling**: Capturing operating system signals (SIGINT/SIGTERM) for graceful shutdowns.
 
-### Run an example
+---
+
+## Project Structure
+
+* `08-context-timeout`: Examples of using `context.WithTimeout` to prevent hanging processes.
+* `09-graceful-shutdown`: Implementing clean exits using `os/signal` and `context.NotifyContext`.
+* `10-mini-project`: The final comprehensive implementation of the architecture described above.
+
+---
+
+## How to Run
+
+Ensure you have Go installed on your system. Navigate to any challenge directory and run:
 
 ```bash
-go run .
-```
+go run main.go
+````
+To test the graceful shutdown in the mini-project, initiate the program and press Ctrl+C. You will observe the workers finishing their current task before the main process exits.
 
-Run all tests:
-
-```bash
-go test ./...
-```
 
 ---
-
-## Included Patterns
-
-* **Race Condition** – Demonstrates shared state access and race prevention
-* **Producer–Consumer** – Safe data exchange using channels
-* **Buffered Channels** – Decoupling producers and consumers
-* **Worker Pool** – Limiting concurrency with a fixed number of workers
-* **Fan-In / Fan-Out** – Distributing and aggregating work
-* **Concurrent Pipeline** – Multi-stage concurrent processing
-* **Select & Multiplexing** – Listening to multiple channels
-* **Context Timeout / Cancellation** – Controlling goroutine lifecycles
-
----
-
-## Learning Tips
-
-* Watch “Go Concurrency Patterns” by Rob Pike (Google I/O 2012)
-* Modify the examples and create your own scenarios
-* Combine multiple patterns to solve complex problems
-* Use the race detector:
-
-```bash
-go run -race .
-```
 
